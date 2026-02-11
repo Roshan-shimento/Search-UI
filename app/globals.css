@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f7f8fa;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #0073cf;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f2f5;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5f6f8;
+  --muted-foreground: #5a6573;
+  --accent: #e6f2fb;
+  --accent-foreground: #0073cf;
+  --destructive: #d32f2f;
+  --destructive-foreground: #ffffff;
+  --border: #dde1e6;
+  --input: #ffffff;
+  --ring: #0073cf;
+  --chart-1: #e85d00;
+  --chart-2: #0073cf;
+  --chart-3: #2e7d32;
+  --chart-4: #f5a623;
+  --chart-5: #6b7280;
+  --radius: 0.375rem;
+  --sidebar: #f0f2f5;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #0073cf;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6f2fb;
+  --sidebar-accent-foreground: #0073cf;
+  --sidebar-border: #dde1e6;
+  --sidebar-ring: #0073cf;
+  --arctera-orange: #e85d00;
+  --arctera-blue: #0073cf;
+  --arctera-link: #0066cc;
+  --arctera-link-visited: #5c2d91;
+  --arctera-dark-blue: #003d73;
+  --arctera-green: #2e7d32;
+}
+
+.dark {
+  --background: #1a1a1a;
+  --foreground: #e5e5e5;
+  --card: #262626;
+  --card-foreground: #e5e5e5;
+  --popover: #262626;
+  --popover-foreground: #e5e5e5;
+  --primary: #3b9ed9;
+  --primary-foreground: #ffffff;
+  --secondary: #333333;
+  --secondary-foreground: #e5e5e5;
+  --muted: #333333;
+  --muted-foreground: #a0a0a0;
+  --accent: #1e3a4d;
+  --accent-foreground: #3b9ed9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #404040;
+  --input: #333333;
+  --ring: #3b9ed9;
+  --chart-1: #f97316;
+  --chart-2: #3b9ed9;
+  --chart-3: #10b981;
+  --chart-4: #fbbf24;
+  --chart-5: #9ca3af;
+  --sidebar: #262626;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #3b9ed9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e3a4d;
+  --sidebar-accent-foreground: #3b9ed9;
+  --sidebar-border: #404040;
+  --sidebar-ring: #3b9ed9;
+  --arctera-orange: #f97316;
+  --arctera-blue: #3b9ed9;
+  --arctera-link: #5cb3e8;
+  --arctera-link-visited: #a78bda;
+}
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-arctera-orange: var(--arctera-orange);
+  --color-arctera-blue: var(--arctera-blue);
+  --color-arctera-link: var(--arctera-link);
+  --color-arctera-link-visited: var(--arctera-link-visited);
+  --color-arctera-dark-blue: var(--arctera-dark-blue);
+  --color-arctera-green: var(--arctera-green);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
