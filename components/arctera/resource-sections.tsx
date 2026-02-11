@@ -92,7 +92,7 @@ function ResourceSection({ title, icon: Icon, items, onViewAll, maxItems = 4, is
                   {item.title}
                 </Link>
                 <div className="text-xs text-muted-foreground mb-2">
-                  {item.product} | {new Date(item.date).toLocaleDateString()}
+                  {item.product} | {new Date(item.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                 </div>
                 <p className="text-sm text-foreground line-clamp-2">{item.summary}</p>
               </div>
