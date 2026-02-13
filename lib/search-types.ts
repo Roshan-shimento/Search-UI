@@ -50,7 +50,7 @@ export interface SearchResultItem {
 }
 
 export interface FilterOption {
-  id: string
+  value: string
   label: string
   count: number
 }

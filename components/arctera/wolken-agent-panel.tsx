@@ -1,7 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ChevronDown, Search, Settings, RefreshCw, Download, MoreVertical, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { SearchTabs, supportSiteTabs } from "./search-tabs"
+import { FiltersSidebar } from "./filters-sidebar"
+import { AISummary } from "./ai-summary"
+import { SortDropdown } from "./sort-dropdown"
+import { SearchResult } from "./search-result"
+import { VideoGrid } from "./video-grid"
+import { ResourceSections } from "./resource-sections"
+import { mockSearchResults, filterGroups } from "@/lib/search-data"
+import type { SupportSiteTabType, SortOption } from "@/lib/search-types"
 
 interface Ticket {
   id: string
@@ -34,8 +43,16 @@ export function WolkenAgentPanel() {
   const [sortColumn, setSortColumn] = useState<string>("ticketId")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   const [activeMainTab, setActiveMainTab] = useState<"notes" | "search" | "resolution">("search")
-  const [activeSearchTab, setActiveSearchTab] = useState<"all" | "cases" | "support" | "internal">("all")
   const [searchQuery, setSearchQuery] = useState("Testing for Demo")
+
+  // Support-style search state for the Search tab (matches Wolken Support Site)
+  const [supportActiveTab, setSupportActiveTab] = useState<SupportSiteTabType>("all")
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({
+    language: ["english"],
+  })
+  const [sortBy, setSortBy] = useState<SortOption>("relevance")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   const handleSort = (column: string) => {
     if (sortColumn === column) {
@@ -54,6 +71,48 @@ export function WolkenAgentPanel() {
   const handleBackToList = () => {
     setShowDetailView(false)
   }
+
+  const handleFilterChange = (groupId: string, optionId: string) => {
+    setSelectedFilters((prev) => {
+      const current = prev[groupId] || []
+      const updated = current.includes(optionId) ? current.filter((id) => id !== optionId) : [...current, optionId]
+      return { ...prev, [groupId]: updated }
+    })
+  }
+
+  const tabToTypeMap: Record<SupportSiteTabType, string | null> = {
+    all: null,
+    "support-articles": "support-article",
+    documentation: "documentation",
+    community: "community",
+    blogs: "blog",
+    videos: "video",
+  }
+
+  const filteredResults = useMemo(() => {
+    return mockSearchResults.filter((item) => {
+      if (supportActiveTab !== "all") {
+        const expectedType = tabToTypeMap[supportActiveTab]
+        if (expectedType && item.type !== expectedType) return false
+      }
+      if (selectedFilters.type?.length > 0 && !selectedFilters.type.includes(item.type)) return false
+      return true
+    })
+  }, [supportActiveTab, selectedFilters])
+
+  const sortedResults = useMemo(() => {
+    return [...filteredResults].sort((a, b) => {
+      if (sortBy === "latest") {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      }
+      return 0
+    })
+  }, [filteredResults, sortBy])
+
+  const paginatedResults = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return sortedResults.slice(startIndex, startIndex + itemsPerPage)
+  }, [sortedResults, currentPage, itemsPerPage])
 
   if (showDetailView && selectedTicket) {
     const ticket = mockTickets.find(t => t.id === selectedTicket)
@@ -401,105 +460,6 @@ export function WolkenAgentPanel() {
 
             {activeMainTab === "search" && (
               <div className="flex-1 flex flex-col p-6 overflow-auto">
-                {/* Sub-tabs - Horizontal Scroll */}
-                <div className="mb-4 -mx-6 px-6 overflow-x-auto scrollbar-thin">
-                  <div className="flex gap-2 pb-2 min-w-max">
-                    <button
-                      onClick={() => setActiveSearchTab("all")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap transition-colors ${
-                        activeSearchTab === "all"
-                          ? "border-2 border-primary text-primary bg-primary/5"
-                          : "border border-border hover:bg-muted/50"
-                      }`}
-                    >
-                      <span className="text-xs">⊞</span>
-                      All
-                    </button>
-                    <button
-                      onClick={() => setActiveSearchTab("cases")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap transition-colors ${
-                        activeSearchTab === "cases"
-                          ? "border-2 border-primary text-primary bg-primary/5"
-                          : "border border-border hover:bg-muted/50"
-                      }`}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Cases
-                    </button>
-                    <button
-                      onClick={() => setActiveSearchTab("support")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap transition-colors ${
-                        activeSearchTab === "support"
-                          ? "border-2 border-primary text-primary bg-primary/5"
-                          : "border border-border hover:bg-muted/50"
-                      }`}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Support Articles
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Internal Articles
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Prod Docs
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Jira
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Confluence
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      Security Alerts
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      Community
-                    </button>
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium whitespace-nowrap border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                      </svg>
-                      Blogs
-                    </button>
-                  </div>
-                </div>
-
                 {/* Search Input */}
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -520,55 +480,84 @@ export function WolkenAgentPanel() {
                   </div>
                 </div>
 
-                {/* Filters and Sort */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                    <span>Filters</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">Sort By</span>
-                    <button className="flex items-center gap-1 hover:text-primary transition-colors">
-                      Relevance
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                  </div>
+                {/* Support-style tabs (same as Wolken Support Site) */}
+                <div className="-mx-6 mb-3 bg-white border-b">
+                  <SearchTabs
+                    tabs={supportSiteTabs}
+                    activeTab={supportActiveTab}
+                    onTabChange={(tab) => {
+                      setSupportActiveTab(tab)
+                      setCurrentPage(1)
+                    }}
+                    compact
+                  />
                 </div>
 
-                {/* Search Results */}
-                <div className="flex-1 flex items-center justify-center">
-                  <p className="text-muted-foreground text-center">No Articles found for the selected search</p>
-                </div>
+                {/* Support-style layout: filters left, AI summary + results right (match Wolken Support Site) */}
+                <div className="flex-1 flex flex-col md:flex-row gap-4">
+                  {/* Filters sidebar */}
+                  <aside className="w-full md:w-56 shrink-0 md:shrink-0">
+                    <FiltersSidebar
+                      filters={filterGroups}
+                      selectedFilters={selectedFilters}
+                      onFilterChange={handleFilterChange}
+                      compact
+                    />
+                  </aside>
 
-                {/* Pagination */}
-                <div className="pt-4 border-t flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Items per page:</span>
-                    <button className="flex items-center gap-1 px-2 py-1 border rounded hover:bg-muted/50 transition-colors">
-                      100
-                      <ChevronDown className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <span className="text-muted-foreground">0 of 0</span>
-                  <div className="flex items-center gap-1">
-                    <button className="p-1 border rounded hover:bg-muted/50 transition-colors disabled:opacity-50" disabled>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <button className="p-1 border rounded hover:bg-muted/50 transition-colors disabled:opacity-50" disabled>
-                      <ChevronLeft className="w-3 h-3" />
-                    </button>
-                    <button className="p-1 border rounded hover:bg-muted/50 transition-colors disabled:opacity-50" disabled>
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
-                    <button className="p-1 border rounded hover:bg-muted/50 transition-colors disabled:opacity-50" disabled>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                  {/* Main content: AI summary on top, results below */}
+                  <div className="flex-1 min-w-0 flex flex-col mt-4 md:mt-0">
+                    <div className="mb-3">
+                      <AISummary
+                        summary="Search results from Wolken Support documentation. Find guides, tutorials, troubleshooting tips, and best practices."
+                        sources={[
+                          { title: "Support Documentation", url: "#" },
+                          { title: "Knowledge Base", url: "#" },
+                        ]}
+                      />
+                    </div>
+
+                    {/* Results area */}
+                    {supportActiveTab === "all" ? (
+                      <div>
+                        <ResourceSections
+                          results={sortedResults}
+                          onViewAll={(type) => {
+                            setSupportActiveTab(type as SupportSiteTabType)
+                            setCurrentPage(1)
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between mb-2 text-xs">
+                          <div className="text-muted-foreground">
+                            {sortedResults.length === 0
+                              ? "0 results"
+                              : `${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
+                                  currentPage * itemsPerPage,
+                                  sortedResults.length
+                                )} of ${sortedResults.length}`}
+                          </div>
+                          <SortDropdown value={sortBy} onChange={setSortBy} resultCount={sortedResults.length} />
+                        </div>
+
+                        {supportActiveTab === "videos" ? (
+                          <VideoGrid videos={paginatedResults} />
+                        ) : (
+                          <div className="border rounded-md bg-white divide-y">
+                            {paginatedResults.map((result) => (
+                              <SearchResult
+                                key={result.id}
+                                item={result}
+                                searchQuery={searchQuery}
+                                compact
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

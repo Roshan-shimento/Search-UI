@@ -1,7 +1,7 @@
+
 "use client"
 
-import { useMemo } from "react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Pagination } from "@/components/arctera/pagination"
 import { AEMLandingPage } from "@/components/arctera/aem-landing-page"
 import { ResourceSections } from "@/components/arctera/resource-sections"
@@ -16,24 +16,10 @@ import { SearchResult } from "@/components/arctera/search-result"
 import { QuickViewModal } from "@/components/arctera/quick-view-modal"
 import { VideoGrid } from "@/components/arctera/video-grid"
 import { WolkenAgentPanel } from "@/components/arctera/wolken-agent-panel"
-import {
-  type SearchResultItem,
-  type WolkenTabType,
-  type SortOption,
-  type FilterGroup,
-} from "@/lib/search-types"
+import { type SearchResultItem, type WolkenTabType, type SortOption, type SupportSiteTabType, type FilterGroup } from "@/lib/search-types"
 
 // Main view type for top-level navigation
 type MainViewType = "wolken-support" | "aem-site" | "community-invision" | "wolken-full" | "wolken-agent"
-
-// Define SupportSiteTabType locally to avoid import issues
-type SupportSiteTabType =
-  | "all"
-  | "support-articles"
-  | "documentation"
-  | "community"
-  | "blogs"
-  | "videos"
 
 // Mock data for all searches
 const mockSearchResults: SearchResultItem[] = [
