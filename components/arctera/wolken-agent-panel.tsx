@@ -495,18 +495,20 @@ export function WolkenAgentPanel() {
 
                 {/* Support-style layout: filters left, AI summary + results right (match Wolken Support Site) */}
                 <div className="flex-1 flex flex-col md:flex-row gap-4">
-                  {/* Filters sidebar */}
-                  <aside className="w-full md:w-56 shrink-0 md:shrink-0">
-                    <FiltersSidebar
-                      filters={filterGroups}
-                      selectedFilters={selectedFilters}
-                      onFilterChange={handleFilterChange}
-                      compact
-                    />
-                  </aside>
+                  {/* Filters sidebar - hidden in ticket detail view */}
+                  {!showDetailView && (
+                    <aside className="w-full md:w-56 shrink-0 md:shrink-0">
+                      <FiltersSidebar
+                        filters={filterGroups}
+                        selectedFilters={selectedFilters}
+                        onFilterChange={handleFilterChange}
+                        compact
+                      />
+                    </aside>
+                  )}
 
                   {/* Main content: AI summary on top, results below */}
-                  <div className="flex-1 min-w-0 flex flex-col mt-4 md:mt-0">
+                  <div className={`flex-1 min-w-0 flex flex-col mt-4 md:mt-0 ${showDetailView ? 'w-full' : ''}`}>
                     <div className="mb-3">
                       <AISummary
                         summary="Search results from Wolken Support documentation. Find guides, tutorials, troubleshooting tips, and best practices."
@@ -539,7 +541,7 @@ export function WolkenAgentPanel() {
                                   sortedResults.length
                                 )} of ${sortedResults.length}`}
                           </div>
-                          <SortDropdown value={sortBy} onChange={setSortBy} resultCount={sortedResults.length} />
+                          {!showDetailView && <SortDropdown value={sortBy} onChange={setSortBy} resultCount={sortedResults.length} />}
                         </div>
 
                         {supportActiveTab === "videos" ? (
